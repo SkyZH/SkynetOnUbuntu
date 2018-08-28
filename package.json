@@ -28,10 +28,10 @@
     "coverage": "jest --coverage",
     "watch": "npm run build -- --watch",
     "watch:test": "jest --watch",
-    "start": "npm run build && DEBUG=* node index.js"
+    "start": "npm run build && DEBUG=skynet:* node index.js"
   },
   "dependencies": {
-    "@skyzh/tick": "^1.0.0",
+    "@skyzh/tick": "^1.1.0",
     "@types/bluebird": "^3.5.23",
     "@types/debug": "^0.0.30",
     "@types/lodash": "^4.14.116",

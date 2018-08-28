@@ -7,14 +7,14 @@ import * as child_process from 'child_process';
 
 function getExec(
   cmd: string,
-  arg: string[],
+  args: string[],
   regex: RegExp
 ): Promise<number | null> {
   return new Promise((resolve, reject) => {
     let result = '';
     const child = child_process.execFile(
       '/opt/vc/bin/vcgencmd',
-      ['measure_temp'],
+      args,
       (err, stdout, stderr) => {
         result += stdout;
       }

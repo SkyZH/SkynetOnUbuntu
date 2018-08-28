@@ -125,7 +125,7 @@ async function main() {
         `voltage: ${volReport[0].data}`,
       ].join('\n')
     );
-    await delay(1000);
+    await delay(3000);
   }
 }
 
