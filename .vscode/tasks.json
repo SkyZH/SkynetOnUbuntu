@@ -53,7 +53,7 @@
     },
     {
       "type": "npm",
-      "script": "run",
+      "script": "start",
       "group": {
         "kind": "test",
         "isDefault": true

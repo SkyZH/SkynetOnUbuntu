@@ -28,7 +28,7 @@
     "coverage": "jest --coverage",
     "watch": "npm run build -- --watch",
     "watch:test": "jest --watch",
-    "run": "npm run build && DEBUG=* node index.js"
+    "start": "npm run build && DEBUG=* node index.js"
   },
   "dependencies": {
     "@skyzh/tick": "^1.0.0",
