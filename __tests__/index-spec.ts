@@ -1,5 +1,7 @@
+jest.mock('../src/admin');
+
 import * as index from '../src/index';
 
-test('Should have Greeter available', () => {
-  expect(index.Greeter).toBeTruthy();
+test('Should have main available', () => {
+  expect(index).toBeTruthy();
 });

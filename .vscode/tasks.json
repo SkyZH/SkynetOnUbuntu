@@ -41,7 +41,11 @@
       "type": "npm",
       "label": "test",
       "script": "test",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
     },
     {
       "type": "npm",
@@ -53,11 +57,7 @@
     },
     {
       "type": "npm",
-      "script": "start",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      }
+      "script": "start"
     }
   ]
 }
