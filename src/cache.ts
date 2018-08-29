@@ -2,6 +2,7 @@ const debug = require('debug')('skynet:cache');
 import * as NodeCache from 'node-cache';
 import { Model, IReport } from '@skyzh/tick';
 import * as _ from 'lodash';
+import { database as Database } from 'firebase-admin';
 
 const CACHE_MAP: { [id: string]: any } = {
   "second": { TTL: 60 * 60 * 3, cacheOnly: true },
@@ -13,15 +14,15 @@ const CACHE_MAP: { [id: string]: any } = {
 
 export class Cache {
   private cache: NodeCache;
-  private refs:  { [id: string]: FirebaseFirestore.DocumentReference };
+  private refs:  { [id: string]: Database.Reference };
 
-  constructor(private baseRef: FirebaseFirestore.CollectionReference) {
+  constructor(private baseRef: Database.Reference) {
     this.cache = new NodeCache({ stdTTL: 60 * 60 * 2, checkperiod: 60 * 5, errorOnMissing: true });
     this.refs = {
-      cpu: baseRef.doc('CPU'),
-      memory: baseRef.doc('Memory'),
-      voltage: baseRef.doc('Voltage'),
-      temperature: baseRef.doc('Temperature'),
+      cpu: baseRef.child('CPU'),
+      memory: baseRef.child('Memory'),
+      voltage: baseRef.child('Voltage'),
+      temperature: baseRef.child('Temperature'),
     };
   }
 
@@ -32,10 +33,10 @@ export class Cache {
   ): Promise<number | null> {
     return this.get_key(`${name}-${table}-${id}`, CACHE_MAP[table]).catch(err =>
       this.refs[name]
-        .collection(table)
-        .doc(id)
-        .get()
-        .then(d => Promise.resolve(d.exists ? +d.data()!.data : null))
+        .child(table)
+        .child(id)
+        .once('value')
+        .then(d => Promise.resolve(d.exists() ? +d.val()!.data : null))
     );
   }
 
@@ -52,14 +53,14 @@ export class Cache {
   }
 
   private getPromise<T>(
-    loc: FirebaseFirestore.DocumentReference,
+    loc:  Database.Reference,
     report: IReport<T>
   ) {
     return loc
-      .collection(report.table)
-      .doc(report.id)
+      .child(report.table)
+      .child(report.id)
       .set({
-        timestamp: new Date(+report.id * 1000),
+        timestamp: +report.id,
         data: report.data,
       });
   }

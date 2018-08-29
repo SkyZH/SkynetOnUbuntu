@@ -10,7 +10,7 @@ function delay(ms: number) {
 }
 
 async function main() {
-  const db = admin.firestore().collection('Mac_Mon');
+  const db = admin.database().ref(require('../data/database'));
   const cache = new Cache(db);
   const cpuModel = new Model<number>(
     'cpu',
