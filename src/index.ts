@@ -51,7 +51,7 @@ async function main() {
     ]).then(res => {
       debug(`Data at ${currentTime} reported`);
     });
-    await delay(3000);
+    await delay(5000);
   }
 }
 

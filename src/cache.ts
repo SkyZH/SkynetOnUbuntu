@@ -42,14 +42,10 @@ export class Cache {
 
   public proxyPut(name: string, report: IReport<number>): Promise<void> {
     const cachePromise = this.cacheSet(`${name}-${report.table}-${report.id}`, CACHE_MAP[report.table].TTL, report.data);
-    if (report.table !== 'second') {
-      debug(`${name}-${report.table}-${report.id} requested to write on remote database`);
-      return Promise.all([cachePromise, this.getPromise(this.refs[name], report)])
-        .then(d => debug(`${name}-${report.table}-${report.id} written to remote database`))
-        .catch(err => debug(`${name}-${report.table}-${report.id} failed to write: ${err}`));
-    } else {
-      return cachePromise;
-    }
+    debug(`${name}-${report.table}-${report.id} requested to write on remote database`);
+    return Promise.all([cachePromise, this.getPromise(this.refs[name], report)])
+      .then(d => debug(`${name}-${report.table}-${report.id} written to remote database`))
+      .catch(err => debug(`${name}-${report.table}-${report.id} failed to write: ${err}`));
   }
 
   private getPromise<T>(
