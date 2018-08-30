@@ -26,7 +26,8 @@ export class Cache {
       voltage: baseRef.child('Voltage'),
       temperature: baseRef.child('Temperature'),
     };
-    setTimeout(() => this.clearDatabase().catch(debug), 60 * 60 * 1000);
+    setTimeout(() => this.clearDatabase().then(d => debug('Database cleared')).catch(debug), 60 * 60 * 1000);
+    this.clearDatabase().then(d => debug('Initial database cleared')).catch(debug);
   }
 
   public proxyGet(
@@ -104,6 +105,7 @@ export class Cache {
               const removes: Array<Promise<void>> = [];
               data.forEach(d => {
                 if (+d.key! < endAt) {
+                  debug(`${key}-${table}-${d.key} requested to remove`);
                   removes.push(ref.child(table).child(d.key!).remove());
                 }
                 return true;
