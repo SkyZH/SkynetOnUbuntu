@@ -54,7 +54,6 @@ function getCpu(): number {
   const deltaSys = currentStatus.sys - lstStatus.sys;
   const result =  (deltaSys + deltaUser) / (deltaUser + deltaSys + deltaIdle);
   lstStatus = currentStatus;
-  console.log(result);
   return result;
 }
 
