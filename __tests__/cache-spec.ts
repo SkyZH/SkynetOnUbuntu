@@ -40,7 +40,7 @@ test('should use database', async () => {
   db.autoFlush();
   const loc = db.child('CPU');
   const cache = new Cache(db);
-  const id = moment('2018/08/01 09:00:00').unix();
+  const id = moment('2018/08/03 09:00:00').unix();
   await cache.getPromise(loc, {
     id: `${id}`,
     table: 'hour',
@@ -49,3 +49,28 @@ test('should use database', async () => {
   const result = await cache.proxyGet('cpu', 'hour', `${id}`);
   expect(result).toBe(23333);
 });
+
+test('should clear database', async() => {
+  const db = admin.database().ref('/Test_Mon');
+  db.autoFlush();
+  const loc = db.child('CPU');
+  const cache = new Cache(db);
+  const id = moment('2018/08/01 09:00:00').unix();
+  const nowID = moment(Date.now()).unix();
+  await cache.getPromise(loc, {
+    id: `${id}`,
+    table: 'second',
+    data: 23333
+  });
+  await cache.getPromise(loc, {
+    id: `${nowID}`,
+    table: 'second',
+    data: 23333
+  });
+  await cache.clearDatabase();
+  const getVal = (id: string): Promise<any> => new Promise((resolve, reject) => loc.child('second').child(id).once('value', d => resolve(d)));
+  const d1 = await getVal(`${id}`);
+  const d2 = await getVal(`${nowID}`);
+  expect(d1.exists()).toBe(false);
+  expect(d2.exists()).toBe(true);
+})

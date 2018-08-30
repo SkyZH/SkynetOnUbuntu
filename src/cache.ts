@@ -3,10 +3,12 @@ import * as NodeCache from 'node-cache';
 import { Model, IReport } from '@skyzh/tick';
 import * as _ from 'lodash';
 import { database as Database } from 'firebase-admin';
+import * as moment from 'moment';
+import { resolve } from 'url';
 
 const CACHE_MAP: { [id: string]: any } = {
-  "second": { TTL: 60 * 60 * 3, cacheOnly: true },
-  "minute": { TTL: 60 * 60 * 24 * 7, cacheOnly: false },
+  "second": { TTL: 60 * 60 * 3, cacheOnly: true, retain: 60 * 60 * 24 },
+  "minute": { TTL: 60 * 60 * 24 * 7, cacheOnly: false, retain: 60 * 60 * 24 * 7 },
   "hour": { TTL: 60 * 60 * 24 * 30, cacheOnly: false },
   "day": { TTL: 60 * 60 * 24 * 300, cacheOnly: false },
   "month": { TTL: 60 * 60 * 24 * 300, cacheOnly: false }
@@ -17,13 +19,14 @@ export class Cache {
   private refs:  { [id: string]: Database.Reference };
 
   constructor(private baseRef: Database.Reference) {
-    this.cache = new NodeCache({ stdTTL: 60 * 60 * 2, checkperiod: 60 * 5, errorOnMissing: true });
+    this.cache = new NodeCache({ stdTTL: 60 * 60 * 3, checkperiod: 60 * 5, errorOnMissing: true });
     this.refs = {
       cpu: baseRef.child('CPU'),
       memory: baseRef.child('Memory'),
       voltage: baseRef.child('Voltage'),
       temperature: baseRef.child('Temperature'),
     };
+    setTimeout(() => this.clearDatabase().catch(debug), 60 * 60 * 1000);
   }
 
   public proxyGet(
@@ -82,5 +85,35 @@ export class Cache {
         }
       });
     });
+  }
+
+
+  private clearDatabase(): Promise<void> {
+    const promises: Array<Promise<void>> = [];
+    for (const key of _.keys(this.refs)) {
+      const ref = this.refs[key];
+      for (const table of _.keys(CACHE_MAP)) {
+        const cachePolicy = CACHE_MAP[table];
+        if (cachePolicy.retain) {
+          const endAt = moment(Date.now() - cachePolicy.retain * 1000).unix();
+          promises.push(ref.child(table)
+            .orderByKey()
+            .endAt(endAt)
+            .once('value')
+            .then(data => {
+              const removes: Array<Promise<void>> = [];
+              data.forEach(d => {
+                if (+d.key! < endAt) {
+                  removes.push(ref.child(table).child(d.key!).remove());
+                }
+                return true;
+              });
+              return Promise.all(removes);
+            }).then(d => { return })
+          )
+        }
+      }
+    }
+    return Promise.all(promises).then(d => { return });
   }
 }
