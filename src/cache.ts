@@ -98,7 +98,7 @@ export class Cache {
           const endAt = moment(Date.now() - cachePolicy.retain * 1000).unix();
           promises.push(ref.child(table)
             .orderByKey()
-            .endAt(endAt)
+            .endAt(`${endAt}`)
             .once('value')
             .then(data => {
               const removes: Array<Promise<void>> = [];
