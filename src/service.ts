@@ -31,7 +31,7 @@ function getExec(
 }
 
 function getTemp(): Promise<number | null> {
-  return getExec('sensors', [], /Package id 0:  +(.*)°C/);
+  return getExec('sensors', [], /Package id 0:(.*?)°C/);
 }
 
 let lstStatus: { [id: string]: number } = { user: 0, sys: 0, idle: 0 };
