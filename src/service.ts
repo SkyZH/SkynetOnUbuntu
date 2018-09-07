@@ -13,7 +13,7 @@ function getExec(
   return new Promise((resolve, reject) => {
     let result = '';
     const child = child_process.execFile(
-      '/opt/vc/bin/vcgencmd',
+      cmd,
       args,
       (err, stdout, stderr) => {
         result += stdout;
@@ -31,15 +31,7 @@ function getExec(
 }
 
 function getTemp(): Promise<number | null> {
-  return getExec('/opt/vc/bin/vcgencmd', ['measure_temp'], /temp=(.*)'C/);
-}
-
-function getVolt(): Promise<number | null> {
-  return getExec(
-    '/opt/vc/bin/vcgencmd',
-    ['measure_volts', 'core'],
-    /volt=(.*)V/
-  );
+  return getExec('sensors', [], /Package id 0:  +(.*)°C/);
 }
 
 let lstStatus: { [id: string]: number } = { user: 0, sys: 0, idle: 0 };
@@ -47,7 +39,7 @@ let lstStatus: { [id: string]: number } = { user: 0, sys: 0, idle: 0 };
 function getCpu(): number {
   const currentStatus: { [id: string]: number } = { user: 0, sys: 0, idle: 0 };
   _.forEach(os.cpus(), (cpu: any) => {
-    _.forEach(['user', 'sys', 'idle'], key => currentStatus[key] += cpu.times[key]);
+    _.forEach(['user', 'sys', 'idle'], (key: string) => currentStatus[key] += cpu.times[key]);
   });
   const deltaIdle = currentStatus.idle - lstStatus.idle;
   const deltaUser = currentStatus.user - lstStatus.user;
@@ -61,22 +53,19 @@ export default class Service {
   constructor(
     private cpuModel: Model<number>,
     private memModel: Model<number>,
-    private temModel: Model<number>,
-    private volModel: Model<number>
+    private temModel: Model<number>
   ) {}
 
   public async report(): Promise<{ [name: string]: Array<IReport<number>> }> {
-    const [cpuReport, memReport, temReport, volReport] = await Promise.all([
+    const [cpuReport, memReport, temReport] = await Promise.all([
       this.cpuModel.report(getCpu(), moment(Date.now())),
       this.memModel.report(+(os.totalmem() - os.freemem()), moment(Date.now())),
       this.temModel.report((await getTemp()) || 0, moment(Date.now())),
-      this.volModel.report((await getVolt()) || 0, moment(Date.now())),
     ]);
     return {
       cpuReport,
       memReport,
       temReport,
-      volReport,
     };
   }
 }

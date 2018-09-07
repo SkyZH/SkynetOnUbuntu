@@ -23,7 +23,6 @@ export class Cache {
     this.refs = {
       cpu: baseRef.child('CPU'),
       memory: baseRef.child('Memory'),
-      voltage: baseRef.child('Voltage'),
       temperature: baseRef.child('Temperature'),
     };
     setTimeout(() => this.clearDatabase().then(d => debug('Database cleared')).catch(debug), 60 * 60 * 1000);

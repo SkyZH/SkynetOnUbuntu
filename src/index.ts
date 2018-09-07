@@ -22,24 +22,18 @@ async function main() {
     (data: number[]) => _.mean(data),
     (table: string, id: string) => cache.proxyGet('memory', table, id)
   );
-  const volModel = new Model<number>(
-    'voltage',
-    (data: number[]) => _.mean(data),
-    (table: string, id: string) => cache.proxyGet('voltage', table, id)
-  );
   const temModel = new Model<number>(
     'temperature',
     (data: number[]) => _.mean(data),
     (table: string, id: string) => cache.proxyGet('temperature', table, id)
   );
-  const service = new Service(cpuModel, memModel, temModel, volModel);
+  const service = new Service(cpuModel, memModel, temModel);
   while (true) {
     debug('Gathering Data');
     const {
       cpuReport,
       memReport,
       temReport,
-      volReport,
     } = await service.report();
     debug('Reporting Data');
     const currentTime = new Date(Date.now());
@@ -47,7 +41,6 @@ async function main() {
       ..._.map(cpuReport, (report: IReport<number>) => cache.proxyPut('cpu', report)),
       ..._.map(memReport, (report: IReport<number>) => cache.proxyPut('memory', report)),
       ..._.map(temReport, (report: IReport<number>) => cache.proxyPut('temperature', report)),
-      ..._.map(volReport, (report: IReport<number>) => cache.proxyPut('voltage', report)),
     ]).then(res => {
       debug(`Data at ${currentTime} reported`);
     });
